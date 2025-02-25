@@ -1,385 +1,215 @@
-import { View, Text, StyleSheet, Image, Pressable, Platform } from 'react-native';
-import { MapPin, Clock, Users, ChevronRight, Car, Bike, Bus, MessageCircle, Star } from 'lucide-react-native';
-import { format } from 'date-fns';
+import { View, Text, Image, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
-  withSequence,
 } from 'react-native-reanimated';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-type VehicleType = 'car' | 'bike' | 'cng' | 'uber' | 'taxi';
-
-type Member = {
+type Ride = {
   id: string;
-  name: string;
-  avatar: string;
-};
-
-type Driver = {
-  name: string;
-  avatar: string;
-  rating: number;
-  badges: string[];
-  gender: 'male' | 'female';
-  verified: boolean;
-};
-
-type RideCardProps = {
-  id: string;
-  driver: Driver;
+  driver: {
+    name: string;
+    avatar: string;
+    rating: number;
+    badges: string[];
+    gender: 'male' | 'female';
+    verified: boolean;
+  };
   from: string;
   to: string;
   date: Date;
   seats: number;
   price: number;
-  vehicleType: VehicleType;
+  vehicleType: 'car' | 'bike' | 'cng' | 'uber' | 'taxi';
   vehicleNumber?: string;
   femaleOnly: boolean;
-  members: Member[];
-  onChatPress: () => void;
+  members: Array<{
+    id: string;
+    name: string;
+    avatar: string;
+  }>;
 };
 
-export default function RideCard({
-  driver,
-  from,
-  to,
-  date,
-  seats,
-  price,
-  vehicleType,
-  vehicleNumber,
-  femaleOnly,
-  members,
-  onChatPress,
-}: RideCardProps) {
-  const scale = useSharedValue(1);
-  const elevation = useSharedValue(2);
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.98);
-    elevation.value = withSpring(4);
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1);
-    elevation.value = withSpring(2);
-  };
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    elevation: elevation.value,
+const RideCard = ({ driver, from, to, date, seats, price, vehicleType, femaleOnly, members, onPress }) => {
+  const joinButtonScale = useSharedValue(1);
+  const joinButtonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: joinButtonScale.value }],
   }));
 
-  const getVehicleIcon = (type: VehicleType) => {
-    switch (type) {
-      case 'car':
-        return <Car size={16} color="#6366f1" />;
-      case 'bike':
-        return <Bike size={16} color="#6366f1" />;
-      case 'cng':
-      case 'uber':
-      case 'taxi':
-        return <Bus size={16} color="#6366f1" />;
-    }
-  };
-
-  const getBadgeColor = (badge: string) => {
-    switch (badge) {
-      case 'Good':
-        return '#22c55e';
-      case 'Reliable':
-        return '#6366f1';
-      case 'Hero':
-        return '#eab308';
-      default:
-        return '#64748b';
-    }
-  };
-
-  const pulseAnimation = () => {
-    'worklet';
-    return withSequence(
-      withSpring(1.05),
-      withSpring(1)
-    );
+  const handleJoinPress = () => {
+    joinButtonScale.value = withSpring(0.95, { damping: 15, stiffness: 150 });
+    setTimeout(() => {
+      joinButtonScale.value = withSpring(1, { damping: 15, stiffness: 150 });
+    }, 100);
+    onPress();
   };
 
   return (
-    <AnimatedPressable
-      style={[styles.rideCard, animatedStyle]}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}>
-      <View style={styles.driverInfo}>
-        <View style={styles.avatarContainer}>
+    <View style={styles.card}>
+      <View style={styles.content}>
+        <View style={styles.driverInfo}>
           <Image source={{ uri: driver.avatar }} style={styles.avatar} />
-          {driver.verified && (
-            <View style={styles.verifiedBadge}>
-              <Star size={12} color="#fff" fill="#fff" />
+          <View style={styles.driverDetails}>
+            <Text style={styles.driverName}>{driver.name}</Text>
+            <View style={styles.driverRatingBadge}>
+              <Text style={styles.driverRating}>★ {driver.rating}</Text>
+              {driver.badges.map((badge) => (
+                <Text key={badge} style={styles.badge}>{badge}</Text>
+              ))}
             </View>
-          )}
-        </View>
-        <View style={styles.driverDetails}>
-          <Text style={styles.driverName}>{driver.name}</Text>
-          <View style={styles.ratingContainer}>
-            <Star size={14} color="#eab308" fill="#eab308" />
-            <Text style={styles.rating}>{driver.rating}</Text>
-            {driver.badges.map((badge) => (
-              <View
-                key={badge}
-                style={[styles.badge, { backgroundColor: getBadgeColor(badge) }]}>
-                <Text style={styles.badgeText}>{badge}</Text>
-              </View>
-            ))}
           </View>
         </View>
-        <Pressable
-          style={styles.chatButton}
-          onPress={() => {
-            scale.value = pulseAnimation();
-            onChatPress();
-          }}>
-          <MessageCircle size={20} color="#6366f1" />
-        </Pressable>
-      </View>
-
-      <View style={styles.rideDetails}>
-        <View style={styles.locationContainer}>
-          <MapPin size={16} color="#6366f1" />
-          <View style={styles.locations}>
-            <Text style={styles.location}>{from}</Text>
-            <Text style={styles.locationArrow}>→</Text>
-            <Text style={styles.location}>{to}</Text>
-          </View>
-        </View>
-
-        <View style={styles.infoRow}>
-          <View style={styles.info}>
-            <Clock size={16} color="#64748b" />
-            <Text style={styles.infoText}>
-              {format(date, 'MMM d, h:mm a')}
-            </Text>
-          </View>
-
-          <View style={styles.info}>
-            {getVehicleIcon(vehicleType)}
-            <Text style={styles.infoText}>
-              {vehicleNumber || vehicleType}
-            </Text>
-          </View>
-
-          <View style={styles.info}>
-            <Users size={16} color="#64748b" />
-            <Text style={styles.infoText}>{seats} seats left</Text>
-          </View>
-        </View>
-
-        <View style={styles.bottomRow}>
-          {femaleOnly && (
-            <View style={styles.femaleOnlyTag}>
-              <Text style={styles.femaleOnlyText}>Female Only</Text>
+        <Text style={styles.route}>{from} → {to}</Text>
+        <Text style={styles.details}>
+          {date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })}
+          {vehicleType === 'car' ? ' 🚗' : ' 🚲'} {seats} seats left
+        </Text>
+        {femaleOnly && <Text style={styles.femaleOnly}>Female Only</Text>}
+        <Text style={styles.price}>${price} per person</Text>
+        {members.length > 0 && (
+          <View style={styles.membersSection}>
+            <Text style={styles.membersTitle}>Members</Text>
+            <View style={styles.membersList}>
+              {members.map((member) => (
+                <Image key={member.id} source={{ uri: member.avatar }} style={styles.memberAvatar} />
+              ))}
             </View>
-          )}
-          <View style={styles.priceContainer}>
-            <Text style={styles.price}>${price}</Text>
-            <Text style={styles.perPerson}> per person</Text>
-            <ChevronRight size={20} color="#6366f1" />
           </View>
-        </View>
+        )}
       </View>
-
-      {members.length > 0 && (
-        <View style={styles.membersContainer}>
-          <Text style={styles.membersTitle}>Members</Text>
-          <View style={styles.membersList}>
-            {members.map((member) => (
-              <Image
-                key={member.id}
-                source={{ uri: member.avatar }}
-                style={styles.memberAvatar}
-              />
-            ))}
-          </View>
-        </View>
-      )}
-    </AnimatedPressable>
+      <AnimatedPressable
+        style={[styles.joinButton, joinButtonAnimatedStyle]}
+        onPress={handleJoinPress}>
+        <Text style={styles.joinButtonText}>Join Ride</Text>
+      </AnimatedPressable>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  rideCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
+  card: {
+    backgroundColor: '#ffffff', // White background
+    borderRadius: 16, // Rounded corners
+    padding: 12, // Tight padding for compactness
+    marginBottom: 12, // Tight margin
+    shadowColor: '#3b82f6', // Blue shadow
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 2,
-    ...Platform.select({
-      web: {
-        cursor: 'pointer',
-        transition: 'transform 0.2s ease-in-out',
-      },
-    }),
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: '#e5f3ff', // Light blue border around the entire card
+    flexDirection: 'row', // Row layout for content and button
+    alignItems: 'flex-end', // Align items to the bottom
+    justifyContent: 'space-between', // Space between content and join button
+  },
+  content: {
+    flex: 1, // Allow content to take available space
+    paddingRight: 8, // Space for the button on the right
   },
   driverInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8, // Tight margin
   },
-  avatarContainer: {
-    position: 'relative',
+  driverDetails: {
+    flex: 1,
+  },
+  driverRatingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
   },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 12,
-  },
-  verifiedBadge: {
-    position: 'absolute',
-    right: 8,
-    bottom: -4,
-    backgroundColor: '#6366f1',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
-  },
-  driverDetails: {
-    flex: 1,
+    borderColor: '#3b82f6', // Blue border for avatar
+    marginRight: 8, // Tight margin
   },
   driverName: {
     fontSize: 16,
+    color: '#1f2937', // Dark gray
     fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 4,
   },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  rating: {
+  driverRating: {
     fontSize: 14,
-    color: '#64748b',
-    marginRight: 8,
+    color: '#6b7280', // Gray
   },
   badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    marginRight: 4,
-  },
-  badgeText: {
     fontSize: 12,
-    color: '#fff',
+    color: '#f59e0b', // Yellow for badges
+    backgroundColor: '#fefcbf', // Light yellow background
+    paddingHorizontal: 6, // Tight padding
+    paddingVertical: 2, // Tight padding
+    borderRadius: 6, // Smaller radius
+    marginLeft: 6, // Space between rating and badge
+  },
+  route: {
+    fontSize: 16,
+    color: '#1f2937',
     fontWeight: '500',
+    marginBottom: 8, // Tight margin
   },
-  chatButton: {
-    padding: 8,
-    backgroundColor: '#eff6ff',
-    borderRadius: 12,
-  },
-  rideDetails: {
-    gap: 12,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  locations: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  location: {
-    fontSize: 15,
-    color: '#1e293b',
-    fontWeight: '500',
-  },
-  locationArrow: {
-    fontSize: 15,
-    color: '#6366f1',
-    fontWeight: '600',
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  info: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  infoText: {
+  details: {
     fontSize: 14,
-    color: '#64748b',
+    color: '#6b7280',
+    marginBottom: 8, // Tight margin
   },
-  bottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  femaleOnlyTag: {
-    backgroundColor: '#fdf2f8',
-    paddingHorizontal: 10,
+  femaleOnly: {
+    fontSize: 14,
+    color: '#1f2937',
+    backgroundColor: '#dbeafe', // Light blue background
+    paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
-  },
-  femaleOnlyText: {
-    color: '#be185d',
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  priceContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    borderRadius: 8,
+    marginBottom: 8, // Tight margin
   },
   price: {
-    fontSize: 18,
+    fontSize: 16,
+    color: '#3b82f6', // Blue for price
     fontWeight: '600',
-    color: '#6366f1',
+    marginBottom: 8, // Tight margin
   },
-  perPerson: {
-    fontSize: 14,
-    color: '#64748b',
-  },
-  membersContainer: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
+  membersSection: {
+    marginBottom: 0, // Removed margin to eliminate blank space
   },
   membersTitle: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#64748b',
-    marginBottom: 8,
+    color: '#6b7280',
+    marginBottom: 4,
   },
   membersList: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
   },
   memberAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 8,
+  },
+  joinButton: {
+    backgroundColor: '#3b82f6', // Blue button
+    paddingVertical: 8, // Tight padding
+    paddingHorizontal: 16, // Tight padding
+    borderRadius: 12,
+    marginBottom: 12, // Tight margin to bottom
+    marginLeft: 8, // Space from content
+    shadowColor: '#3b82f6',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  joinButtonText: {
+    color: '#ffffff', // White text
+    fontSize: 14, // Slightly smaller for compactness
+    fontWeight: '600',
   },
 });
+
+export default RideCard;

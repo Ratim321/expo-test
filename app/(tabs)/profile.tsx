@@ -1,215 +1,90 @@
-import { View, Text, StyleSheet, Image, Pressable, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, LogOut, Star, Clock } from 'lucide-react-native';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Settings, LogOut } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Profile() {
-  const user = {
-    name: 'Alex Thompson',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e',
-    rating: 4.8,
-    ridesGiven: 12,
-    ridesJoined: 8,
-  };
-
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <Text style={styles.title}>Profile</Text>
-            <Pressable style={styles.iconButton}>
-              <Settings size={24} color="#64748b" />
-            </Pressable>
-          </View>
+    <motion.div
+      className="flex flex-col items-center p-6 bg-gray-100 min-h-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Profile Card */}
+      <Card className="w-full max-w-md bg-white shadow-xl rounded-2xl overflow-hidden transition-transform hover:scale-105">
+        <CardContent className="flex flex-col items-center p-6">
+          {/* Settings Icon */}
+          <motion.div 
+            className="absolute top-4 right-4 cursor-pointer p-2 rounded-full hover:bg-gray-200 transition"
+            whileHover={{ scale: 1.1 }}
+          >
+            <Settings size={20} className="text-gray-600" />
+          </motion.div>
 
-          <View style={styles.profile}>
-            <Image source={{ uri: user.avatar }} style={styles.avatar} />
-            <Text style={styles.name}>{user.name}</Text>
-            <View style={styles.rating}>
-              <Star size={16} color="#eab308" fill="#eab308" />
-              <Text style={styles.ratingText}>{user.rating}</Text>
-            </View>
-          </View>
+          {/* Profile Picture */}
+          <motion.div 
+            className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 shadow-lg transition-all hover:shadow-xl"
+            whileHover={{ scale: 1.1 }}
+          >
+            <img
+              src="https://via.placeholder.com/150"
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
 
-          <View style={styles.stats}>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{user.ridesGiven}</Text>
-              <Text style={styles.statLabel}>Rides Given</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{user.ridesJoined}</Text>
-              <Text style={styles.statLabel}>Rides Joined</Text>
-            </View>
-          </View>
-        </View>
+          {/* User Info */}
+          <h2 className="text-xl font-semibold text-gray-800 mt-3">Alex Thompson</h2>
+          <p className="text-gray-500 flex items-center gap-1">
+            <span className="text-yellow-500">⭐</span> 4.8 Rating
+          </p>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Upcoming Rides</Text>
-          <View style={styles.rideCard}>
-            <View style={styles.rideInfo}>
-              <Clock size={20} color="#6366f1" />
-              <View>
-                <Text style={styles.rideDestination}>Downtown Library → North Campus</Text>
-                <Text style={styles.rideTime}>Today, 2:30 PM</Text>
-              </View>
-            </View>
-            <Pressable style={styles.viewButton}>
-              <Text style={styles.viewButtonText}>View</Text>
-            </Pressable>
-          </View>
-        </View>
+          {/* Ride Stats */}
+          <div className="flex justify-around w-full mt-4">
+            <div className="text-center">
+              <p className="text-lg font-bold text-blue-600">12</p>
+              <p className="text-gray-500 text-sm">Rides Given</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-blue-600">8</p>
+              <p className="text-gray-500 text-sm">Rides Joined</p>
+            </div>
+          </div>
 
-        <Pressable style={styles.logoutButton}>
-          <LogOut size={20} color="#ef4444" />
-          <Text style={styles.logoutText}>Log Out</Text>
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Upcoming Ride Section */}
+          <motion.div
+            className="w-full mt-6 p-4 bg-blue-100 border border-blue-300 rounded-xl flex items-center justify-between cursor-pointer hover:bg-blue-200 transition"
+            whileHover={{ scale: 1.05 }}
+          >
+            <div>
+              <p className="text-sm text-gray-600">Upcoming Ride</p>
+              <p className="font-semibold text-gray-800">Downtown Library → North Campus</p>
+              <p className="text-sm text-gray-500">Today, 2:30 PM</p>
+            </div>
+            <Button className="text-blue-600 border border-blue-600 bg-transparent hover:bg-blue-600 hover:text-white transition">
+              View
+            </Button>
+          </motion.div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between w-full mt-6">
+            <motion.button
+              className="flex items-center gap-2 text-gray-600 bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+              whileHover={{ scale: 1.05 }}
+            >
+              <Settings size={16} /> Settings
+            </motion.button>
+
+            <motion.button
+              className="flex items-center gap-2 text-white bg-red-500 px-4 py-2 rounded-lg hover:bg-red-600 transition"
+              whileHover={{ scale: 1.05 }}
+            >
+              <LogOut size={16} /> Log Out
+            </motion.button>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#1e293b',
-  },
-  iconButton: {
-    padding: 8,
-  },
-  profile: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  avatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 8,
-  },
-  name: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1e293b',
-  },
-  rating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 16,
-    color: '#64748b',
-    fontWeight: '500',
-  },
-  stats: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 24,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-  },
-  stat: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#e2e8f0',
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1e293b',
-  },
-  statLabel: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 4,
-  },
-  section: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e293b',
-    marginBottom: 12,
-  },
-  rideCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  rideInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  rideDestination: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#1e293b',
-  },
-  rideTime: {
-    fontSize: 14,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  viewButton: {
-    backgroundColor: '#eff6ff',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-  },
-  viewButtonText: {
-    color: '#6366f1',
-    fontWeight: '500',
-  },
-  logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 16,
-    marginTop: 12,
-    marginHorizontal: 20,
-    marginBottom: 32,
-    backgroundColor: '#fef2f2',
-    borderRadius: 12,
-  },
-  logoutText: {
-    color: '#ef4444',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
